@@ -1,39 +1,15 @@
-Detectron2 wrapper for DETR
-=======
+DS-DETR
+## Environment
+Ubuntu 18.0.4, Python 3.9, Pytorch=1.7.0.
 
-We provide a Detectron2 wrapper for DETR, thus providing a way to better integrate it in the existing detection ecosystem. It can be used for example to easily leverage datasets or backbones provided in Detectron2.
-
-This wrapper currently supports only box detection, and is intended to be as close as possible to the original implementation, and we checked that it indeed match the results. Some notable facts and caveats:
-- The data augmentation matches DETR's original data augmentation. This required patching the RandomCrop augmentation from Detectron2, so you'll need a version from the master branch from June 24th 2020 or more recent.
-- To match DETR's original backbone initialization, we use the weights of a ResNet50 trained on imagenet using torchvision. This network uses a different pixel mean and std than most of the backbones available in Detectron2 by default, so extra care must be taken when switching to another one. Note that no other torchvision models are available in Detectron2 as of now, though it may change in the future.
-- The gradient clipping mode is "full_model", which is not the default in Detectron2.
-
-# Usage
-
-To install Detectron2, please follow the [official installation instructions](https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md).
 
 ## Evaluating a model
 
-For convenience, we provide a conversion script to convert models trained by the main DETR training loop into the format of this wrapper. To download and convert the main Resnet50 model, simply do:
+python main.py --dataset_file "coco" --coco_path "data/coco" --epoch 100 --lr_backbone=1e-5 --batch_size=2 --num_workers=4 --output_dir="outputs"  --lr 1e-4 --lr_drop 80 --pretrain checkpoint0098.pth --masks  --enc_rpe2d rpe-2.0-product-ctx-1-k --dynamic_scale type3 --eval
 
-```
-python converter.py --source_model https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth --output_model converted_model.pth
-```
-
-You can then evaluate it using:
-```
-python train_net.py --eval-only --config configs/detr_256_6_6_torchvision.yaml  MODEL.WEIGHTS "converted_model.pth"
-```
 
 
 ## Training
 
-To train DETR on a single node with 8 gpus, simply use:
-```
-python train_net.py --config configs/detr_256_6_6_torchvision.yaml --num-gpus 8
-```
+python main.py --dataset_file "coco" --coco_path "data/coco" --epoch 100 --lr_backbone=1e-5 --batch_size=2 --num_workers=4 --output_dir="outputs"  --lr 1e-4 --lr_drop 80 --pretrain checkpoint0098.pth --masks  --enc_rpe2d rpe-2.0-product-ctx-1-k --dynamic_scale type3
 
-To fine-tune DETR for instance segmentation on a single node with 8 gpus, simply use:
-```
-python train_net.py --config configs/detr_segm_256_6_6_torchvision.yaml --num-gpus 8 MODEL.DETR.FROZEN_WEIGHTS <model_path>
-```
